@@ -8,6 +8,7 @@ Standard TTL console at 3.3 volts, using following test pins on PCB:
 |TP8  | GND |
 |TP11 | TX  |
 |TP4| RX |
+|TP10|+5v|
 
 Params: 38400 8N1
 
