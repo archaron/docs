@@ -1,5 +1,5 @@
 # Xiaomi Mijia Smart Multi-Mode Gateway 
-#####ZNDMWG03LM LM18-MJGWA-V3.0
+##### ZNDMWG03LM LM18-MJGWA-V3.0
 
 ## Serial console
 Standard TTL console at 3.3 volts, using following test pins on PCB:
