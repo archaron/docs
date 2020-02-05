@@ -30,6 +30,19 @@ RTL8197FS SoC
 
 ## Flash chip
 Winbond W25M01GV 1G SPI NAND, 128MiB
+
+| Testpoint | Signal |
+| ---  | --- |
+|TP13|GND|
+|TP16|/CS|
+|TP17|DO|
+|TP18|/HOLD|
+|TP19|CLK|
+|TP20|DI|
+
+
+
+|
 ![Flash](4.jpg)
 
 ## Bluetooth module

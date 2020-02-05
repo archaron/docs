@@ -1,4 +1,56 @@
 ```
+uart ok
+strap pin:0x412b8ae2
+enable spi-nand
+ROM ver:v1.1, sig:455cc27, time:2016.01.04-18:42+0800, CPU(400 MHz), DDR2(533 MHz)
+load efuse ok
+init IP ok
+rom_progress: 0x0600006d
+load_data_from_storage(260): 0xbfe01540, 0x00000000, 0xbfd16f44 
+load_data_from_spi_nand_flash(70): 0xbfe01540, 0x00000000, 0xbfe03e18 
+check_image_header(72): h(69,72,61,6d), s(69,72,61,6d) 
+img sig ok
+rom_progress: 0x0c00006d
+load_data_from_spi_nand_flash(81) 0x00000004 0x000024ba 
+load_data_from_spi_nand_flash(86): 0xbfe01d40, 0x00000001, 0xbfe03e18 
+load_data_from_spi_nand_flash(86): 0xbfe02540, 0x00000002, 0xbfe03e18 
+load_data_from_spi_nand_flash(86): 0xbfe02d40, 0x00000003, 0xbfe03e18 
+load_data_from_spi_nand_flash(86): 0xbfe03540, 0x00000004, 0xbfe03e18 
+load_data_from_spi_nand_flash(90) read done (size:9402) 
+chksum ok
+rom_progress: 0x0e00006d
+load img ok
+rom_progress: 0x1000006d
+jump 0xbfe01550
+
+Booting...
+SPI NAND clock not enable
+
+SPI Nand ID=00efaa21
+SPI Nand die chipsize=0x08000000 byte
+SPI Nand dienum=1,
+SPI Nand blocksize=0x00020000 byte,
+SPI Nand pagesize=0x00000800 byte,
+SPI Nand oobsize=0x00000040 byte,
+[rtkn_scan_bbt, line 1812], RBA=51, this->RBA_PERCENT = 5,block_v2r_num=1024
+[rtkn_scan_bbt, line 1822] block_v2r_num 00000400
+[rtk_scan_v2r_bbt]:678,RBA=00000033,2=00000400,
+[rtk_scan_v2r_bbt]:684,block_v2r_num=000003cd
+INFO: Stored BBT in Die 0: block=8 , block_status_p1=0x000000bb
+load bbt v2r table:0 page:512
+[rtk_scan_v2r_bbt] have created v2r bbt table:0 on block 8, just loads it !!
+check v2r bbt table:0 OK
+[rtk_nand_scan_bbt, line 393] mem_page_num=1 bbt_page 704
+INFO: Stored BBT in Die 0: block=11 , block_status_p1=0x000000bb
+load bbt table:0 page:704
+[rtk_nand_scan_bbt] have created bbt table:0 on block 11, just loads it !!
+check bbt table:0 OK
+[dump_BBT] Nand BBT Content
+Congratulation!! No BBs in this Nand.
+=>CPU Wake-up interrupt happen! GISR=09000084 
+
+
+
 Realtek RTL8197F boot code at 2019.11.15-19:29+0800 v3.4T-pre2.1 (993MHz)
 -- version: 1.0.2.005 --
 Info: Load boot_info success!
