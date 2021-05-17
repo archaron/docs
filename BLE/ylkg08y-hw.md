@@ -8,3 +8,8 @@ Built on the universal TLV0.1 module. Based on [TLSR8267](http://wiki.telink-sem
 
 ![Pinout](ylkg08y/yeelight_tlv01_pinout.png)
 
+## Board view & debug interfaces
+
+Main board has 3.3V asynchronus UART & SWS flash/debug onewire interface routed on test pads: 
+
+![Board](ylkg08y/yeelight_YLKG08YL_board.jpg)
