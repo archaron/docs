@@ -119,7 +119,7 @@ UUID 16: Xiaomi Inc. (*0xfe95*)
 ```
 0x3251 => 
 0 ...............15
-1000 1010 0100 1100     Time protocol, Mac included, Objects included, Binding confirm, Version = 12 
+1000 1010 0100 1100     Time protocol, Unencrypted, Mac included, Objects included, Binding confirm, Auth=0, Version = 3 
 ```
 
 |Value| Bit number| Field name| Description
@@ -134,7 +134,7 @@ UUID 16: Xiaomi Inc. (*0xfe95*)
 |1|9|	**Binding Confirm**| This is binding confirmation packet|
 |0|10|Secure Auth|Secure authentication supported by chip|
 |0|11|Secure Login|Symmetric encryption is supported, otherwise, use assymetric encryption|
-|1100|12 ~ 15|	**Version**|Device version 
+|0011|12 ~ 15|	**Version**|Device version 
 
 ##### Capability field
 |Bit number| Field name| Description
