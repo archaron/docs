@@ -2,6 +2,9 @@
 # YeeLight YLKG08YL bluetooth dimmer lamp control
 
 
+### Hardware
+Please, look at [Hardware page](ylkg08y-hw.md)
+
 
 ### BLE Services
 | Handle  	| UUID  	| Value  	| Description  	| Notice  	|
