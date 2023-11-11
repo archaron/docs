@@ -45,6 +45,13 @@ Please, look at [Hardware page](ylkg08y-hw.md)
 |0x001a|00002901-0000-1000-8000-00805f9b34fb|beaconkey|Characteristic User Description||
 
 
+### Basic auth procedure
+
+To decrypt messages from remote, we need to know `beacon_key` which is stored in the remote control. 
+Application itself must define `token`, it will be used as cipher key in auth procedure.
+Device uses MiBeacon V3 encryption protocol.
+
+Device has some BLE characteristics:
 ```
 00000001  authCharacteristic      token           00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  Notify, Write
 00000002                          productid       00 00                                                        Read
@@ -55,13 +62,24 @@ Please, look at [Hardware page](ylkg08y-hw.md)
 00000013                          sn              ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff  Read, Write
 00000014                          beaconkey       10 d8 99 8c 8e cd 72 9d e4 21 02 8d                          Read, Write
 ```
+#### Authentication process
+- Send `0x90, 0xCA, 0x85, 0xDE` bytes to authInitCharacteristic. (UUID "0010")
+- Subscribe authCharacteristic. (UUID "0001")
+- Send cipher(mixA(reversedMac, productID), token) to authCharacteristic. (UUID "0001")
+- Now you'll get a notification on authCharacteristic. You must wait for this notification before proceeding to next step. 
+  The notification data can be ignored or used to check an integrity, this is optional. 
+  If you want to perform a check, compare cipher(mixB(reversedMac, productID), cipher(mixA(reversedMac, productID), res)) 
+  where res is received payload with your token, they must equal.
+- Send cipher(token, `0x92, 0xAB, 0x54, 0xFA`) to authCharacteristic. (UUID "0010")
+- Read from verCharacteristics (UUID "0004") . You can ignore the response data, you just have to perform a read to complete authentication process.
 
-- Send 0x90, 0xCA, 0x85, 0xDE bytes to authInitCharacteristic.
-- Subscribe authCharacteristic.
-- Send cipher(mixA(reversedMac, productID), token) to authCharacteristic.
-- Now you'll get a notification on authCharacteristic. You must wait for this notification before proceeding to next step. The notification data can be ignored or used to check an integrity, this is optional. If you want to perform a check, compare cipher(mixB(reversedMac, productID), cipher(mixA(reversedMac, productID), res)) where res is received payload with your token, they must equal.
-- Send 0x92, 0xAB, 0x54, 0xFA to authCharacteristic.
-- Read from verCharacteristics. You can ignore the response data, you just have to perform a read to complete authentication process.
+MixA is:
+```{reversedMac[0], reversedMac[2], reversedMac[5], (uint8_t)(productId & 0xff), (uint8_t)(productId & 0xff), reversedMac[4], reversedMac[5], reversedMac[1]}```
+
+MixB is:
+```{reversedMac[0], reversedMac[2], reversedMac[5], (uint8_t)((productId >> 8) & 0xff),  reversedMac[4],  reversedMac[0], reversedMac[5], (uint8_t)(productId & 0xff)};```
+
+Cipher is a basic RC4 algorithm.
 
 ### Discovery packet
 ```
@@ -165,76 +183,102 @@ Bond abilities are:
 
 ----------
 ### When turning dimmer
-Right
+Data is sent via BLE discovery packets. Payload is encrypted:
 
 ```
---FC--  -PID-  -CNT- ------ MAC -------
-0x3058  0x3b6        f8:24:41:c2:44:69
-58 30   b6 03 | e7 | 69 44 c2 41 24 f8 | f9 ee f0 58 51 ee 01 | 00 00 | 4c
-58 30   b6 03 | e8 | 69 44 c2 41 24 f8 | b0 24 11 25 88 96 01 | 00 00 | fd
-58 30   b6 03 | e9 | 69 44 c2 41 24 f8 | 50 11 ac 61 a1 aa 01 | 00 00 | dd  
-58 30   b6 03 | ea | 69 44 c2 41 24 f8 | 73 d1 18 f0 7f 2e 01 | 00 00 | b5   
-58 30   b6 03 | eb | 69 44 c2 41 24 f8 | cf af e1 fa 7b df 01 | 00 00 | a9 
-```
-  
-Left
-```
---FC--  -PID-  -CNT- ------ MAC -------
-0x3058  0x3b6        f8:24:41:c2:44:69
-58 30   b6 03 | ec | 69 44 c2 41 24 f8 | 8e 94 70 ff ce 5a 01 | 00 00 | 66 
-58 30   b6 03 | ed | 69 44 c2 41 24 f8 | 0a 02 0a b9 f1 86 01 | 00 00 | 3f 
-58 30   b6 03 | ee | 69 44 c2 41 24 f8 | 91 b2 5e 20 8f 87 01 | 00 00 | 86                      
-58 30   b6 03 | ef | 69 44 c2 41 24 f8 | f3 70 a0 16 46 a2 01 | 00 00 | 3a    
-58 30   b6 03 | f0 | 69 44 c2 41 24 f8 | 70 72 ec de 2c 62 01 | 00 00 | 78   
-58 30   b6 03 | f1 | 69 44 c2 41 24 f8 | ed 60 ee 1e 43 01 01 | 00 00 | e3        
-58 30   b6 03 | f2 | 69 44 c2 41 24 f8 | a5 9d bc c7 42 bd 01 | 00 00 | 66    
-58 30   b6 03 | f3 | 69 44 c2 41 24 f8 | a7 ba 10 44 ea 59 01 | 00 00 | 7f 
-```  
-  
-Click once
-```
---FC--  -PID-  -CNT- ------ MAC -------
-0x3058  0x3b6        f8:24:41:c2:44:69
-58 30   b6 03 | c1 | 69 44 c2 41 24 f8 | 17 4a bb 49  78 d3 02 | 00 00 | 63           
-58 30   b6 03 | c2 | 69 44 c2 41 24 f8 | af 66 33 a4  96 58 02 | 00 00 | 82           
-58 30   b6 03 | c3 | 69 44 c2 41 24 f8 | 8d 3d 6c 1b  a7 a5 02 | 00 00 | f4           
-58 30   b6 03 | c4 | 69 44 c2 41 24 f8 | ca 72 77 53  6c 90 02 | 00 00 | 47           
-58 30   b6 03 | c5 | 69 44 c2 41 24 f8 | ec 53 5f 58  b2 f3 02 | 00 00 | cb           
-58 30   b6 03 | c6 | 69 44 c2 41 24 f8 | 50 71 f5 26  7a 5a 02 | 00 00 | 7d
-
-```
-Click twice
-```
---FC--  -PID-  -CNT- ------ MAC -------
-0x3058  0x3b6        f8:24:41:c2:44:69
-58 30   b6 03 | 2f | 69 44 c2 41 24 f8 | 47 c1 69 a7 cb 62 03 | 00 00 | 82           
-58 30   b6 03 | 30 | 69 44 c2 41 24 f8 | d1 18 63 e9 f2 ea 03 | 00 00 | bc           
-58 30   b6 03 | 31 | 69 44 c2 41 24 f8 | f4 b1 e4 37 44 00 03 | 00 00 | f5           
-58 30   b6 03 | 32 | 69 44 c2 41 24 f8 | d0 17 96 67 a3 7a 03 | 00 00 | e9           
-58 30   b6 03 | 33 | 69 44 c2 41 24 f8 | da ec 11 83 12 ea 03 | 00 00 | 95           
-58 30   b6 03 | 34 | 69 44 c2 41 24 f8 | f2 e1 87 93 df 3a 03 | 00 00 | 04           
-58 30   b6 03 | 35 | 69 44 c2 41 24 f8 | 14 dd 64 da e9 21 03 | 00 00 | af           
-
+--FC--  -PID-  -CNT- ------ MAC -------  --- ENCRYPTED ---   - CNT -   MIC
+0x3058  0x3b6        f8:24:41:c2:44:69  
+58 30   b6 03 | e7 | 69 44 c2 41 24 f8 | f9 ee f0 58 51 ee | 01 00 00 | 4c
+58 30   b6 03 | e8 | 69 44 c2 41 24 f8 | b0 24 11 25 88 96 | 01 00 00 | fd
+58 30   b6 03 | e9 | 69 44 c2 41 24 f8 | 50 11 ac 61 a1 aa | 01 00 00 | dd  
+58 30   b6 03 | ea | 69 44 c2 41 24 f8 | 73 d1 18 f0 7f 2e | 01 00 00 | b5   
+58 30   b6 03 | eb | 69 44 c2 41 24 f8 | cf af e1 fa 7b df | 01 00 00 | a9 
 ```
 
+### Payload encryption
 
-One step left - one step right
+For example dicovery packet from YKYL01YL: 
 ```
-58 30   b6 03 |  00  | 69 44 c2 41 24 f8  | 45 18 1e 80 8c 8a | 05 | 00 00 | 9b
-58 30   b6 03 |  01  | 69 44 c2 41 24 f8  | 02 19 74 dc 7c d0 | 05 | 00 00 | 9c
-58 30   b6 03 |  02  | 69 44 c2 41 24 f8  | 23 38 b0 b8 0b 7f | 05 | 00 00 | e0
-58 30   b6 03 |  03  | 69 44 c2 41 24 f8  | 02 27 33 7e ce 23 | 05 | 00 00 | f5
-58 30   b6 03 |  04  | 69 44 c2 41 24 f8  | 24 d4 3e e1 1b 6c | 05 | 00 00 | c1
-58 30   b6 03 |  05  | 69 44 c2 41 24 f8  | a6 b3 9c 2c b5 3d | 05 | 00 00 | 7a
-58 30   b6 03 |  06  | 69 44 c2 41 24 f8  | e2 28 9f 47 fd d4 | 05 | 00 00 | ab
-58 30   b6 03 |  07  | 69 44 c2 41 24 f8  | 44 db 87 19 20 77 | 05 | 00 00 | 42
-58 30   b6 03 |  08  | 69 44 c2 41 24 f8  | ab 1a f8 66 eb 98 | 05 | 00 00 | 5f
-58 30   b6 03 |  09  | 69 44 c2 41 24 f8  | c3 b7 46 51 9d 90 | 05 | 00 00 | 6c
-```
-0x3058 => 
-0 ...............15
-0001 1010 0000 1100     Mac included, Objects included, Version = 12
-```
-
-
+       | UUID  | <--- sData --->                                                             | 
+ -- -- | -- -- | -FCE- | -PID- | CNT|    -- MAC --      |   -- payload --   |   CNT2   | MIC |
+ 18 16 | 95 FE | 58 30 | 53 01 | 0C | 1D 01 ED 41 24 F8 | 4D 75 BB F4 81 58 | 04 00 00 | 87  |
+ 0   1 |  2  3 |  4  5 |  6  7 |  8 |  9 10 11 12 13 14 | 15 16 17 18 19 20 | 21 22 23 | 24  |
  
+``````
+
+Let's parse:
+Counter = CNT + CNT2 = `0C 04 00 00`  = 0x40c   (Use it to ignore duplicates, incremented on each packet)
+
+Control Field = `58 30` = 0x3058
+
+Product ID = `53 01`  = 0x153
+
+Encrypted Payload = `4D 75 BB F4 81 58`  6 bytes
+
+MIC = 0x87
+
+
+To decrypt this packet we need to calculate AES key. `beaconKey` has 12 bytes length, but AES key should be 16 bytes, so let's extend it.
+
+`AES_KEY = beaconKey[0..5] + 8D 3D 3C 97 + beaconKey[6..11]`
+
+for example, if `beaconKey = F0 9B BE B9 8C 08 43 8B 8E 84 69 5B`, AES key will be:
+
+`AES_KEY = F0 9B BE B9 8C 08  8D 3D 3C 97  43 8B 8E 84 69 5B`
+
+Nonce for encryption is composed of packet fields:
+
+`Nonce = [ FrameControl + deviceType + frameCounter + reversed mac[0..4] ]`
+
+`Nonce = [ 58 30   53 01   0C 04 00 00   1D 01 ED 41 24 F8` ]
+
+Let's decode
+Python code:
+```python
+  aad = b"\x11"
+  token = encrypted_payload[-1:]
+
+  cipher = AES.new(key, AES.MODE_CCM, nonce=nonce, mac_len=4)
+  cipher.update(aad)
+
+  decrypted_payload = cipher.decrypt_and_verify(payload, mic)
+
+```
+
+ESP32 code:
+```c++
+  #define AES_KEY_LENGTH 16
+  #define NONCE_LENGTH   13
+
+  uint8_t add = 0x11; // Constant addon
+  uint8_t tag[4];
+
+  // Set AES key
+  mbedtls_ccm_setkey(&ctx, MBEDTLS_CIPHER_ID_AES, aesKey, AES_KEY_LENGTH * 8);
+  mbedtls_ccm_encrypt_and_tag(&ctx, PAYLOAD_LENGTH, nonce, NONCE_LENGTH, &add, 1, PAYLOAD, DECODED_BUFFER, tag, 4);
+    
+```
+I don't know why, but for ESP32's `mbedtls_ccm_auth_decrypt` does not accept 1 byte tag, only 4 bytes. I've tried to
+make [MIC 0 0 0], [0 0 0 MIC] and other combination, but this doesn't work. But, if we use encrypt function, it magically
+decrypts message. I think this is because of XOR CCM nature. Anyway, we have plaintext message now.
+
+Decrypted message is:
+`01 10 03 01 00 00`
+
+Please, refer to [Object structure](#object-structure)
+
+```
+01 10     Object identifier 0x1001 
+03        Object length     3 bytes
+01 00 00  Actual data
+```
+
+For YKYL01YL field meaning is:
+```
+01  - button number (OFF key) 
+00  - ???
+00  - hold flag, 0x00 - single press, 0x02 - hold
+```
+
+You can use [Proof-of-concept app for ESP32](https://github.com/archaron/xiaomi-ble-esp32-ylyk01yl) as strting point
+
